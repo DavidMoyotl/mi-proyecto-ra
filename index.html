@@ -1,363 +1,110 @@
 <!DOCTYPE html>
-<html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
-    <title>Mi objeto 3D en Realidad Aumentada</title>
-
-    <!-- A-Frame -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-    <!-- AR.js -->
+<html>
+  <head>
+    <title>RA - Robot Interactivo</title>
+    <!-- Librerías de A-Frame y AR.js -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-
+    
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-
-        #titulo {
-            position: fixed;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-
-            background: rgba(0, 0, 0, 0.75);
-            color: white;
-
-            padding: 10px 18px;
-            border-radius: 12px;
-
-            font-size: 18px;
-            text-align: center;
-        }
-
-        #controles {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-
-            z-index: 10;
-
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            border: none;
-            border-radius: 12px;
-
-            padding: 12px 18px;
-
-            font-size: 15px;
-            font-weight: bold;
-
-            background: white;
-            color: #222;
-
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
+      /* Botón flotante para la interacción de giro */
+      .btn-girar {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999;
+        padding: 14px 28px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        cursor: pointer;
+      }
     </style>
-</head>
+  </head>
+  <body style="margin: 0px; overflow: hidden;">
 
-<body>
+    <!-- Botón para girar el robot -->
+    <button class="btn-girar" onclick="girarRobot()">🔄 Girar Robot</button>
 
-    <div id="titulo">
-        🤖 Mi Robot en Realidad Aumentada
-    </div>
+    <!-- Escena de Realidad Aumentada -->
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
 
-    <div id="controles">
-        <button onclick="girarRobot()">
-            🔄 Girar
-        </button>
+      <!-- Marcador HIRO -->
+      <a-marker preset="hiro">
 
-        <button onclick="agrandarRobot()">
-            🔍 Tamaño
-        </button>
-    </div>
+        <!-- Piso de referencia visual -->
+        <a-plane position="0 0 0" rotation="-90 0 0" width="4" height="4" color="#7BC8A4" opacity="0.8"></a-plane>
 
+        <!-- CONTENEDOR PRINCIPAL DEL ROBOT -->
+        <a-entity id="robot" position="0 0 0" scale="0.8 0.8 0.8" rotation="0 0 0">
+          
+          <!-- Cabeza (Al tocarla o al tocar el cuerpo, el robot crece) -->
+          <a-sphere 
+            position="0 1.2 0" 
+            radius="0.4" 
+            color="blue" 
+            class="interactivo" 
+            onclick="aumentarTamaño()">
+          </a-sphere>
 
-    <!-- ESCENA DE REALIDAD AUMENTADA -->
+          <!-- Cuerpo (Basado en el pizarrón) -->
+          <a-box 
+            position="0 0.5 0" 
+            rotation="0 45 0" 
+            width="0.8" 
+            height="0.8" 
+            depth="0.8" 
+            color="red" 
+            class="interactivo" 
+            onclick="aumentarTamaño()">
+          </a-box>
 
-    <a-scene
-        embedded
-        vr-mode-ui="enabled: false"
-        renderer="logarithmicDepthBuffer: true;"
-        arjs="sourceType: webcam; debugUIEnabled: false;">
+          <!-- Detalles del rostro -->
+          <a-sphere position="-0.15 1.3 0.3" radius="0.08" color="white"></a-sphere>
+          <a-sphere position="0.15 1.3 0.3" radius="0.08" color="white"></a-sphere>
+          <a-sphere position="-0.15 1.3 0.38" radius="0.03" color="black"></a-sphere>
+          <a-sphere position="0.15 1.3 0.38" radius="0.03" color="black"></a-sphere>
 
-        <!-- CÁMARA -->
+        </a-entity>
 
-        <a-camera
-            position="0 0 0"
-            look-controls="enabled: false">
-        </a-camera>
+      </a-marker>
 
-
-        <!-- MARCADOR -->
-
-        <a-marker
-            preset="hiro"
-            id="marcador">
-
-
-            <!-- PISO -->
-
-            <a-plane
-                position="0 0 0"
-                rotation="-90 0 0"
-                width="4"
-                height="4"
-                color="#4CAF50"
-                opacity="0.5">
-            </a-plane>
-
-
-            <!-- ROBOT -->
-
-            <a-entity
-                id="robot"
-                position="0 0.5 0"
-                rotation="0 0 0"
-                scale="0.7 0.7 0.7"
-                onclick="tocarRobot()">
-
-
-                <!-- CUERPO -->
-
-                <a-box
-                    id="cuerpo"
-                    position="0 1.5 0"
-                    width="1"
-                    height="1.5"
-                    depth="0.7"
-                    color="#2196F3">
-                </a-box>
-
-
-                <!-- CABEZA -->
-
-                <a-box
-                    id="cabeza"
-                    position="0 2.65 0"
-                    width="0.9"
-                    height="0.8"
-                    depth="0.7"
-                    color="#90CAF9">
-                </a-box>
-
-
-                <!-- OJO IZQUIERDO -->
-
-                <a-sphere
-                    position="-0.2 2.7 0.38"
-                    radius="0.08"
-                    color="#000000">
-                </a-sphere>
-
-
-                <!-- OJO DERECHO -->
-
-                <a-sphere
-                    position="0.2 2.7 0.38"
-                    radius="0.08"
-                    color="#000000">
-                </a-sphere>
-
-
-                <!-- ANTENA -->
-
-                <a-cylinder
-                    position="0 3.2 0"
-                    radius="0.04"
-                    height="0.4"
-                    color="#555555">
-                </a-cylinder>
-
-
-                <a-sphere
-                    position="0 3.42 0"
-                    radius="0.1"
-                    color="#F44336">
-                </a-sphere>
-
-
-                <!-- BRAZO IZQUIERDO -->
-
-                <a-box
-                    position="-0.7 1.5 0"
-                    width="0.3"
-                    height="1.2"
-                    depth="0.3"
-                    color="#1565C0">
-                </a-box>
-
-
-                <!-- BRAZO DERECHO -->
-
-                <a-box
-                    position="0.7 1.5 0"
-                    width="0.3"
-                    height="1.2"
-                    depth="0.3"
-                    color="#1565C0">
-                </a-box>
-
-
-                <!-- MANO IZQUIERDA -->
-
-                <a-sphere
-                    position="-0.7 0.85 0"
-                    radius="0.2"
-                    color="#90CAF9">
-                </a-sphere>
-
-
-                <!-- MANO DERECHA -->
-
-                <a-sphere
-                    position="0.7 0.85 0"
-                    radius="0.2"
-                    color="#90CAF9">
-                </a-sphere>
-
-
-                <!-- PIERNA IZQUIERDA -->
-
-                <a-box
-                    position="-0.3 0.35 0"
-                    width="0.35"
-                    height="0.8"
-                    depth="0.4"
-                    color="#1565C0">
-                </a-box>
-
-
-                <!-- PIERNA DERECHA -->
-
-                <a-box
-                    position="0.3 0.35 0"
-                    width="0.35"
-                    height="0.8"
-                    depth="0.4"
-                    color="#1565C0">
-                </a-box>
-
-
-                <!-- PIES -->
-
-                <a-box
-                    position="-0.3 -0.1 0.1"
-                    width="0.45"
-                    height="0.2"
-                    depth="0.6"
-                    color="#333333">
-                </a-box>
-
-                <a-box
-                    position="0.3 -0.1 0.1"
-                    width="0.45"
-                    height="0.2"
-                    depth="0.6"
-                    color="#333333">
-                </a-box>
-
-            </a-entity>
-
-        </a-marker>
+      <!-- Cámara con cursor para permitir toques/clics sobre los objetos 3D -->
+      <a-entity camera>
+        <a-cursor fuse="false" raycaster="objects: .interactivo"></a-cursor>
+      </a-entity>
 
     </a-scene>
 
-
+    <!-- FUNCIONES JS SOLICITADAS -->
     <script>
+      let gradosRotacion = 0;
+      let escalaActual = 0.8;
 
-        let escala = 0.7;
-        let rotacion = 0;
-        let colorOriginal = true;
+      // 1. Función para girar el robot al presionar el botón
+      function girarRobot() {
+        const robot = document.querySelector('#robot');
+        gradosRotacion += 45; // Suma 45 grados en cada clic
+        robot.setAttribute('rotation', `0 ${gradosRotacion} 0`);
+      }
 
+      // 2. Función para aumentar de tamaño al tocar el robot
+      function aumentarTamaño() {
+        const robot = document.querySelector('#robot');
+        escalaActual += 0.2; // Incrementa el tamaño
 
-        // AL TOCAR EL ROBOT
-
-        function tocarRobot() {
-
-            const robot = document.querySelector("#robot");
-            const cuerpo = document.querySelector("#cuerpo");
-
-            if (colorOriginal) {
-
-                cuerpo.setAttribute("color", "#E91E63");
-
-                escala = 0.9;
-
-                robot.setAttribute(
-                    "scale",
-                    `${escala} ${escala} ${escala}`
-                );
-
-                colorOriginal = false;
-
-            } else {
-
-                cuerpo.setAttribute("color", "#2196F3");
-
-                escala = 0.7;
-
-                robot.setAttribute(
-                    "scale",
-                    `${escala} ${escala} ${escala}`
-                );
-
-                colorOriginal = true;
-            }
+        // Si se vuelve demasiado grande (más de 2x), se reinicia al tamaño original
+        if (escalaActual > 2.0) {
+          escalaActual = 0.8;
         }
 
-
-        // BOTÓN GIRAR
-
-        function girarRobot() {
-
-            const robot = document.querySelector("#robot");
-
-            rotacion += 45;
-
-            robot.setAttribute(
-                "rotation",
-                `0 ${rotacion} 0`
-            );
-        }
-
-
-        // BOTÓN TAMAÑO
-
-        function agrandarRobot() {
-
-            const robot = document.querySelector("#robot");
-
-            escala += 0.2;
-
-            if (escala > 1.5) {
-                escala = 0.5;
-            }
-
-            robot.setAttribute(
-                "scale",
-                `${escala} ${escala} ${escala}`
-            );
-        }
-
+        robot.setAttribute('scale', `${escalaActual} ${escalaActual} ${escalaActual}`);
+      }
     </script>
-
-</body>
-
+  </body>
 </html>
